@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teisinis DI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial; max-width: 700px; margin: auto; padding: 20px; }
+    textarea, button { width: 100%; padding: 10px; font-size: 16px; margin-top: 10px; }
+    .response { background: #f2f2f2; padding: 15px; margin-top: 20px; border-radius: 5px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h2>📚 Teisinis DI – tik pagal Lietuvos teisę</h2>
+
+  <textarea id="klausimas" placeholder="Įveskite teisinį klausimą..."></textarea>
+  <button onclick="siustiKlausima()">Gauti atsakymą</button>
+
+  <div id="atsakymas" class="response"></div>
+
+  <p style="font-size: 0.9em; color: gray;">
+    ⚠️ Atsakymai yra informacinio pobūdžio ir nepakeičia oficialios teisinės konsultacijos.
+  </p>
+
+  <script>
+    async function siustiKlausima() {
+      const klausimas = document.getElementById("klausimas").value;
+      const ats = document.getElementById("atsakymas");
+      ats.textContent = "⏳ Atsakymas generuojamas...";
+
+      const response = await fetch("/api/openai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "gpt-4",
+          messages: [
+            {
+              role: "system",
+              content: "Tu esi Lietuvos teisinis DI asistentas. Jei klausimas neaiškus, paprašyk papildomų duomenų. Kitaip pateik tikslų atsakymą su nuoroda į teisės aktą."
+            },
+            {
+              role: "user",
+              content: klausimas
+            }
+          ],
+          temperature: 0.3,
+          max_tokens: 600
+        })
+      });
+
+      const data = await response.json();
+      ats.textContent = data.choices?.[0]?.message?.content || "Nepavyko gauti atsakymo.";
+    }
+  </script>
+</body>
+</html>
